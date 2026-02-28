@@ -1,0 +1,187 @@
+import { Area } from '../../Election.types';
+
+const communeToGreaterConstituencyMap = {
+  '101': 9000100,
+  '147': 9000100,
+  '151': 9000200,
+  '153': 9000200,
+  '155': 9000100,
+  '157': 9000200,
+  '159': 9000200,
+  '161': 9000200,
+  '163': 9000200,
+  '165': 9000200,
+  '167': 9000200,
+  '169': 9000200,
+  '173': 9000200,
+  '175': 9000200,
+  '183': 9000200,
+  '185': 9000100,
+  '187': 9000200,
+  '190': 9000300,
+  '201': 9000300,
+  '210': 9000300,
+  '217': 9000300,
+  '219': 9000300,
+  '223': 9000300,
+  '230': 9000300,
+  '240': 9000300,
+  '250': 9000300,
+  '253': 9000500,
+  '259': 9000500,
+  '260': 9000300,
+  '265': 9000500,
+  '269': 9000500,
+  '270': 9000300,
+  '306': 9000500,
+  '316': 9000500,
+  '320': 9000500,
+  '326': 9000500,
+  '329': 9000500,
+  '330': 9000500,
+  '336': 9000500,
+  '340': 9000500,
+  '350': 9000500,
+  '360': 9000500,
+  '370': 9000500,
+  '376': 9000500,
+  '390': 9000500,
+  '400': 9000400,
+  '410': 9000600,
+  '420': 9000600,
+  '430': 9000600,
+  '440': 9000600,
+  '450': 9000600,
+  '461': 9000600,
+  '479': 9000600,
+  '480': 9000600,
+  '482': 9000600,
+  '492': 9000600,
+  '510': 9000700,
+  '530': 9000700,
+  '540': 9000700,
+  '550': 9000700,
+  '561': 9000700,
+  '563': 9000700,
+  '573': 9000700,
+  '575': 9000700,
+  '580': 9000700,
+  '607': 9000700,
+  '615': 9000800,
+  '621': 9000700,
+  '630': 9000700,
+  '657': 9000900,
+  '661': 9000900,
+  '665': 9000900,
+  '671': 9000900,
+  '706': 9000800,
+  '707': 9000800,
+  '710': 9000800,
+  '727': 9000800,
+  '730': 9000800,
+  '740': 9000900,
+  '741': 9000800,
+  '746': 9000800,
+  '751': 9000800,
+  '756': 9000900,
+  '760': 9000900,
+  '766': 9000800,
+  '773': 9001000,
+  '779': 9000900,
+  '787': 9001000,
+  '791': 9000900,
+  '810': 9001000,
+  '813': 9001000,
+  '820': 9001000,
+  '825': 9001000,
+  '840': 9001000,
+  '846': 9001000,
+  '849': 9001000,
+  '851': 9001000,
+  '860': 9001000,
+};
+
+export const greaterConstituencies = [
+  {
+    value: 9000400,
+    label: 'Bornholms Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000600,
+    label: 'Fyns Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000200,
+    label: 'Københavns Omegns Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000100,
+    label: 'Københavns Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9001000,
+    label: 'Nordjyllands Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000300,
+    label: 'Nordsjællands Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000500,
+    label: 'Sjællands Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000700,
+    label: 'Sydjyllands Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000900,
+    label: 'Vestjyllands Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+  {
+    value: 9000800,
+    label: 'Østjyllands Storkreds',
+    councilType: 'folketing',
+    councilTypePlural: 'folketinget',
+  },
+];
+
+export const communeToGreaterConstituency = (communeId: string): Area => {
+  const greaterConstituencyId = communeToGreaterConstituencyMap[communeId];
+  if (!greaterConstituencyId) {
+    // fail-safe for developer errors. This should never happen
+    throw new Error(
+      `Unable to convert to greater constituency id: ${communeId}`,
+    );
+  }
+
+  const greaterConstituency = greaterConstituencies.find(
+    (c) => c.value === greaterConstituencyId,
+  );
+  if (!greaterConstituency) {
+    // fail-safe for developer errors. This should never happen
+    throw new Error(
+      `Unable to find greater constituency id: ${greaterConstituencyId}`,
+    );
+  }
+
+  return greaterConstituency;
+};
