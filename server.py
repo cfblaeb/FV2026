@@ -4,10 +4,12 @@ import pandas as pd
 import plotly.express as px
 from dash import Dash, dcc, html, callback_context, Input, Output
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+import chompjs
+import re
+from json import load
 
 # load data
 df = pd.read_feather("2026_FV_Lasse_data.feather").reset_index()
-df.columns = df.columns.str.replace(".0", "")  # fix lige lidt med DR sprg id
 
 color_dict = pd.read_json("various.json").apply(lambda x: x.str.lower()).set_index('bogstav_leg')['farver'].to_dict()
 bogfarve = pd.read_json("various.json").reset_index()
@@ -18,36 +20,17 @@ bogfarve = bogfarve.set_index('bogstav_leg')
 df['bogstav'] = df.parti.map(bogfarve['index']).fillna('X')
 df['sized'] = 5
 
-tv2_sprg = pd.read_json('TV2/tv2_sprg.json').set_index('id')['question']
-#dr_sprgs = pd.read_json('dr1_sprg.json')
-dr_sprgs = pd.Series({
-    "DR0": "Flere penge til uddannelse, skoler og børnehaver",
-    "DR1": "Mere privatisering",
-    "DR2": "Tage hensyn og bruge flere penge på sociale mindretal",
-    "DR3": "Tage hensyn og bruge flere penge på religiøse mindretal",
-    "DR4": "Bedre forhold for privat trafik ",
-    "DR5": "Der skal generelt bruges flere penge på velfærd",
-    "DR6": "Erhverslivet skal hjælpes",
-    "DR7": "Flere grønne tiltag",
-    "DR8": "Mere brugerbetaling",
-    "DR9": "Mere fokus på integration",
-    "DR10": "Flere boliger og lejeboliger",
-    "DR11": "Flere penge på idræt og kultur",
-    "DR12": "Flere penge til små samfund/landsbyer/skoler",
-    "DR13": "Mere offentligt indblik i kommunens aktiviteter",
-    "DR14": "Kommunen skal gøre mere for at sikre borgerne mod klimaforandringerne",
-    "DR15": "Flere penge til de ældre",
-    "DR16": "Der skal satses mere på turisme",
-    "DR17": "Bedre offentlig transport",
-    "DR18": "Prioriter natur over erhverv",
-    "DR19": "Mere politi og kontrol med at regler overholdes",
-})
-
 # liste over columns med spørgsmål
 dk_spg_columns = list(df.columns[df.columns.str.startswith("DR") | df.columns.str.startswith("tv2")])
-#dr_sprgs.columns = dr_sprgs.columns.str.lower()
-sprgs = pd.concat([tv2_sprg, dr_sprgs])#[['id', 'question']].set_index('id')
-#sprgs.index = sprgs.index.astype('str')
+
+dr_sprg = load(open("./TakeTheDR/sprgs.json"))
+with open('./TV2/fv2026.ts', 'r', encoding='utf-8') as f:
+    content = f.read()
+tv2_spg = chompjs.parse_js_object(re.search(r'=\s*(\[.*?\]);', content, re.DOTALL).group(1))
+tv2_spg = {x['id']:x['question'] for x in tv2_spg if "danmark" in x['id']}
+
+sprgs = pd.Series(dr_sprg|tv2_spg)
+
 sprgs = sprgs.loc[dk_spg_columns]
 svar_muligheder = ['helt uenig', 'uenig', 'neutral', 'enig', 'helt enig']
 
@@ -87,7 +70,7 @@ def confidence_ellipse(xs, ys, n_std=1.96, size=100):
     return path
 
 app = Dash(
-	title="Kommunalvalg 2025 - DumData analyse",
+	title="Folketingsvalg 2026 - DumData analyse",
 	external_stylesheets=[dbc.themes.SOLAR, dbc.icons.BOOTSTRAP],
 	meta_tags=[{"name": "viewport", "content": "width=1000, initial-scale=1"}, ],
 )
@@ -98,7 +81,7 @@ app.layout = dbc.Container([
 	dbc.Card(
 		dbc.Container(
 			[
-				html.H2("Kommunalvalg 2025"),
+				html.H2("Folketingsvalg 2026"),
 				html.P("Analyse af hvor de enkelte kandidater står i forhold til hinanden og deres partier",
 					   className="lead", ),
 			],  # fluid=True,
@@ -128,10 +111,9 @@ app.layout = dbc.Container([
 		dbc.ListGroup([
 			dbc.ListGroupItem([
 				html.P(sprgs.loc[spg]),
-				dcc.RadioItems(id=spg, options=[{'label': '', 'value': x / 4} for x in range(5)],
-							   value=0, labelStyle={'display': 'inline-block'})
+				dcc.RadioItems(id=spg, options=[{'label': '', 'value': x / 4} for x in range(5)], value=0, inline=True)
 			]) for spg in dk_spg_columns
-		], flush=True)
+		])
 	], body=True)
 	, ],
     fluid=True,
@@ -159,9 +141,9 @@ def update_graph(valgkreds_filter, shadow, farveblind, data):
         f1 = px.scatter(
             a, x='X', y='y', color='parti', color_discrete_map=color_dict, hover_data=['navn', 'job', 'alder'],
             custom_data=['index'], template="plotly_dark", labels={"X": "Hjalmesans", "y": "Fluplighed"}
-        )
-        if 'alle' in valgkreds_filter:
-            f1.update_traces(marker=dict(size=3))
+        )#.update_traces(marker=dict(size=200))
+        #if 'alle' in valgkreds_filter:
+        #    f1.update_traces(marker=dict(size=3))
 
 
     f1.layout.xaxis.fixedrange = True
