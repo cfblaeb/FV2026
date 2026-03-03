@@ -1,10 +1,10 @@
 nordsjællands storkreds
 bornholms storkreds
-københavns omegns storkreds
-københavns storkreds
-vestjyllands storkreds
 nordjyllands storkreds
-sydjyllands storkreds
+vestjyllands storkreds
 fyns storkreds
-østjyllands storkreds
 sjællands storkreds
+københavns omegns storkreds
+sydjyllands storkreds
+københavns storkreds
+østjyllands storkreds
